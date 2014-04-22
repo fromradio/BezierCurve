@@ -28,11 +28,19 @@ def BezierCurve(points,number):
 		curve += np.outer(Bernstein(N-1,i)(t),points[i])
 	return curve
 class PaintWidget(QtGui.QWidget):
+	"""
+	the widget for paint
+	"""
 	def __init__(self,parent=None):
 		super(PaintWidget,self).__init__(parent)
 		self.points = []
 		self.update()
 		self.bezierCurve = []
+		# set the background color
+		self.setAutoFillBackground(True)
+		p = self.palette()
+		p.setColor(self.backgroundRole(),QtGui.QColor(207,240,158))
+		self.setPalette(p)
 	def _pushPoint(self,pt):
 		self.points.append(pt)
 		self.bezierCurve = BezierCurve(self.points,200)
@@ -42,10 +50,11 @@ class PaintWidget(QtGui.QWidget):
 	def mousePressEvent(self,mouseEvent):
 		currPt = (mouseEvent.x(),mouseEvent.y())
 		self._pushPoint(currPt)
-		print self.points
+		#print self.points
 		self.update()
 	def paintEvent(self,event):
 		painter = QtGui.QPainter(self)
+		painter.setRenderHint(QtGui.QPainter.Antialiasing)
 		self.drawControlLines(painter)
 		self.drawBezierCurve(painter)
 		self.drawControlPoints(painter)
@@ -54,20 +63,28 @@ class PaintWidget(QtGui.QWidget):
 		painter.setPen(QtCore.Qt.red)
 		painter.setBrush(QtCore.Qt.cyan)
 		for pt in self.points:
+			# draw a circle to stand for a point
 			painter.drawEllipse(pt[0]-3,pt[1]-3,6,6)
-		#print "draw control points"
 	def drawControlLines(self,painter):
 		painter.setPen(QtCore.Qt.blue)
 		n = len(self.points)
 		for i in range(n-1):
 			painter.drawLine(self.points[i][0],self.points[i][1],self.points[i+1][0],self.points[i+1][1])
 	def drawBezierCurve(self,painter):
+		pen = QtGui.QPen()
+		pen.setColor(QtGui.QColor(168,219,168))
+		pen.setWidth(3)
+		pen.setStyle(QtCore.Qt.DashDotLine)
+		painter.setPen(pen)
 		if len(self.points) > 2:
 			N = len(self.bezierCurve)
 			for i in range(N-1):
 				painter.drawLine(self.bezierCurve[i][0],self.bezierCurve[i][1],self.bezierCurve[i+1][0],self.bezierCurve[i+1][1])
 
 	def sizeHint(self):
+		"""
+		overload sizeHint to decide default size
+		"""
 		return QtCore.QSize(500,500)
 
 
